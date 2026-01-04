@@ -1,3 +1,4 @@
+
 export interface UnifiedLead {
   id: string;
   firstName: string;
@@ -8,11 +9,24 @@ export interface UnifiedLead {
   country: string;
   source: string;
   
+  // New Contact Details
+  phone: string;
+  location: string;
+  industry: string;
+  websiteUrl: string;
+  linkedinUrl: string;
+
+  // Campaign Info
+  campaignName: string;
+  listName: string;
+
   // Status & Scoring
   status: string;
   score: number;
   analysed: boolean;
   researchReport: string; // HTML
+  tags: string[];
+  optedOut: boolean;
   
   // Outreach Metrics (Lead Gen Sheet)
   emailsSentCount: number;
@@ -20,6 +34,18 @@ export interface UnifiedLead {
   emailsClickedCount: number;
   replied: boolean;
   bounced: boolean;
+
+  // Granular Email Metrics
+  emailMetrics: {
+    email1: { sent: boolean; sentAt: string; opened: boolean; openCount: number; clicked: boolean };
+    email2: { sent: boolean; sentAt: string; opened: boolean; openCount: number; clicked: boolean };
+    email3: { sent: boolean; sentAt: string; opened: boolean; openCount: number; clicked: boolean };
+  };
+  
+  // Sequence Details
+  sequenceStatus: string;
+  sequenceStartDate: string;
+  nextActionDate: string;
   
   // Sales AI Sync (Sales AI Sheet)
   conversationThreadId?: string;
@@ -40,16 +66,39 @@ export interface UnifiedLead {
   lastActionDate?: string;
 }
 
+export type EventType = 'CAMPAIGN_EMAIL' | 'SALES_CHAT' | 'APPOINTMENT_CHAT' | 'NOTE';
+
+export interface TimelineEvent {
+  id: string;
+  type: EventType;
+  timestamp: string;
+  direction: 'inbound' | 'outbound' | 'system';
+  body: string;
+  subject?: string; // For emails
+  
+  // Metadata
+  metadata?: {
+    opened?: boolean;
+    clicked?: boolean;
+    aiReasoning?: string;
+    meetingDetails?: {
+        date: string;
+        link: string;
+        platform: string;
+    };
+    sourceSheet: 'Lead Gen' | 'Sales AI' | 'Appointment AI';
+  };
+}
+
 export interface Conversation {
   id: string;
   leadEmail: string;
   leadName: string;
+  lead: UnifiedLead | null; // Full context
   lastMessage: string;
-  timestamp: string;
-  direction: 'inbound' | 'outbound';
-  aiReasoning?: string;
+  lastTimestamp: string;
   requiresHuman: boolean;
-  messages: Message[];
+  timeline: TimelineEvent[];
 }
 
 export interface Message {
@@ -86,10 +135,33 @@ export interface WorkflowLog {
   id: string;
   workflowName: string;
   status: 'Success' | 'Failed' | 'Running';
-  duration: string;
+  duration: number; // Changed to number (ms)
   timestamp: string;
   message: string;
   healthScore?: number;
+  nextRun?: string;
+  error?: string;
+}
+
+export interface AgentActivity {
+  agentName: string;
+  displayName: string;
+  icon: any;
+  type: string;
+  status: 'running' | 'standby' | 'idle' | 'recovering';
+  statusLabel: string;
+  statusColor: string;
+  currentTask: string;
+  thinkingText: string;
+  lastAction: string;
+  lastActionTime: string;
+  successRate: number;
+  totalRuns: number;
+  avgDuration: number;
+  nextRun: string | null;
+  nextRunLabel: string;
+  progressPercentage: number;
+  showProgressBar: boolean;
 }
 
 export interface AgentStatus {
